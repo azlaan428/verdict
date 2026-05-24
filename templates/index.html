@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VERDICT - Single Page App</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "surface-container-high":"#272a2c","tertiary-fixed-dim":"#ffb95f","on-primary-fixed":"#131b2e","primary-container":"#0f172a","on-tertiary-fixed":"#2a1700","outline-variant":"#45464d","on-primary-container":"#798098","surface-dim":"#101415","surface-container-low":"#191c1e","surface-container":"#1d2022","error":"#ffb4ab","surface-variant":"#323537","inverse-primary":"#565e74","outline":"#909097","on-error":"#690005","on-tertiary-fixed-variant":"#653e00","tertiary":"#ffb95f","primary":"#bec6e0","secondary":"#4edea3","background":"#101415","on-secondary-fixed-variant":"#005236","secondary-fixed":"#6ffbbe","on-secondary":"#003824","primary-fixed-dim":"#bec6e0","surface-container-lowest":"#0b0f10","tertiary-fixed":"#ffddb8","inverse-on-surface":"#2d3133","tertiary-container":"#251400","inverse-surface":"#e0e3e5","on-tertiary-container":"#b47300","error-container":"#93000a","secondary-container":"#00a572","on-tertiary":"#472a00","on-error-container":"#ffdad6","surface":"#101415","on-primary":"#283044","primary-fixed":"#dae2fd","on-primary-fixed-variant":"#3f465c","on-secondary-container":"#00311f","surface-tint":"#bec6e0","surface-bright":"#363a3b","on-surface-variant":"#c6c6cd","on-background":"#e0e3e5","on-secondary-fixed":"#002113","on-surface":"#e0e3e5","surface-container-highest":"#323537","secondary-fixed-dim":"#4edea3"
+            },
+            borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+            spacing:{"margin-mobile":"16px","gutter":"16px","margin-desktop":"32px","unit":"4px","container-max":"1440px"},
+            fontFamily:{"label-caps":["JetBrains Mono"],"headline-sm":["Inter"],"body-md":["Inter"],"display-lg":["Inter"],"headline-md":["Inter"],"body-sm":["Inter"],"data-mono":["JetBrains Mono"]},
+            fontSize:{
+                "label-caps":["11px",{"lineHeight":"1","letterSpacing":"0.08em","fontWeight":"700"}],
+                "headline-sm":["18px",{"lineHeight":"1.2","fontWeight":"600"}],
+                "body-md":["16px",{"lineHeight":"1.6","fontWeight":"400"}],
+                "display-lg":["48px",{"lineHeight":"1.1","letterSpacing":"-0.02em","fontWeight":"700"}],
+                "headline-md":["24px",{"lineHeight":"1.2","fontWeight":"600"}],
+                "body-sm":["14px",{"lineHeight":"1.5","fontWeight":"400"}],
+                "data-mono":["13px",{"lineHeight":"1.4","letterSpacing":"0.02em","fontWeight":"500"}]
+            }
+        }
+    }
+}
+</script>
+<style>
+.pulse-alert{animation:pulse-border 2s cubic-bezier(0.4,0,0.6,1) infinite}
+@keyframes pulse-border{0%,100%{border-color:rgba(255,180,171,1);background-color:rgba(147,0,10,0.1)}50%{border-color:rgba(255,180,171,0.3);background-color:rgba(147,0,10,0.05)}}
+.mono-bg{background-image:radial-gradient(rgba(144,144,151,0.1) 1px,transparent 1px);background-size:20px 20px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cursor-blink{animation:blink 1s step-end infinite}
+@keyframes spin-slow{100%{transform:rotate(360deg)}}
+.animate-spin-slow{animation:spin-slow 8s linear infinite}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+.scanline-effect::after{content:'';position:absolute;top:0;left:0;right:0;height:100%;background:linear-gradient(to bottom,transparent,rgba(78,222,163,0.1),transparent);animation:scanline 3s linear infinite;pointer-events:none}
+.pipeline-line::after{content:'';position:absolute;top:50%;left:100%;width:100%;height:1px;background-color:#45464d;z-index:-1;transform:translateY(-50%)}
+.pipeline-line.active-line::after{background:linear-gradient(90deg,#4edea3,#45464d);background-size:200% 100%;animation:flow 2s linear infinite}
+@keyframes flow{0%{background-position:100% 0}100%{background-position:-100% 0}}
+</style>
+</head>
+<body class="bg-background text-on-surface antialiased h-screen overflow-hidden flex flex-col selection:bg-secondary/30 selection:text-secondary-fixed mono-bg relative">
+
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4" id="modal-overlay">
+  <div class="bg-surface-container-high border border-outline-variant rounded-lg max-w-lg w-full p-6 shadow-2xl relative">
+    <button class="absolute top-4 right-4 text-outline hover:text-on-surface transition-colors" onclick="closeModal()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2" id="modal-title"></h3>
+    <p class="font-data-mono text-data-mono text-on-surface-variant leading-relaxed" id="modal-text"></p>
+    <pre class="hidden bg-surface-container-lowest border border-outline-variant rounded p-4 font-data-mono text-xs text-secondary overflow-auto mt-4 max-h-[300px]" id="modal-code"></pre>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[110] flex flex-col gap-2" id="toast-container"></div>
+
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center h-16 px-8">
+  <div class="flex items-center gap-6">
+    <span class="font-display-lg text-display-lg tracking-tighter text-on-surface">VERDICT</span>
+    <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-surface-variant/50 border border-outline-variant rounded-sm" id="header-status-submission">
+      <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+      <span class="font-label-caps text-label-caps text-secondary">SYSTEM READY</span>
+    </div>
+    <div class="hidden items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary rounded-sm" id="header-status-pipeline">
+      <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+      <span class="font-label-caps text-label-caps text-secondary">LIVE PIPELINE</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button onclick="showModal('settings','SYSTEM_SETTINGS','Configuration panel coming in v3.0. Current build: VERDICT_CORE v2.4_STABLE.')" class="hover:bg-surface-variant/50 transition-colors p-2 rounded-full text-on-surface-variant"><span class="material-symbols-outlined">settings</span></button>
+    <button onclick="showModal('notifications','NOTIFICATIONS','No new system notifications. All agents operational.')" class="hover:bg-surface-variant/50 transition-colors p-2 rounded-full text-on-surface-variant"><span class="material-symbols-outlined">notifications</span></button>
+    <div class="w-8 h-8 rounded-full border border-outline-variant bg-surface-container-highest flex items-center justify-center">
+      <span class="material-symbols-outlined text-sm text-on-surface-variant">person</span>
+    </div>
+  </div>
+</header>
+
+<div class="flex flex-1 mt-16 h-[calc(100vh-64px)] w-full mx-auto relative">
+  <!-- Sidebar -->
+  <nav class="hidden md:flex flex-col py-4 justify-between fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-outline-variant bg-surface-container z-40">
+    <div>
+      <div class="px-4 mb-8 mt-2">
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-1">VERDICT_CORE</h2>
+        <p class="font-label-caps text-label-caps text-outline">V2.4_STABLE</p>
+      </div>
+      <ul class="flex flex-col gap-1">
+        <li><a href="#" id="nav-dashboard" onclick="showScreen('sub')" class="flex items-center gap-3 px-4 py-3 border-l-2 border-secondary text-secondary bg-surface-variant/30 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">analytics</span>Dashboard</a></li>
+        <li><a href="#" id="nav-evaluations" onclick="showScreen('res')" class="flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">fact_check</span>Evaluations</a></li>
+        <li><a href="#" onclick="showModal('gavel','BIAS_LIBRARY','BIAS_LIBRARY: No entries logged yet. Bias flags are archived here after confirmed evaluations.')" class="flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">gavel</span>Bias Library</a></li>
+        <li><a href="#" onclick="showModal('history','ARCHIVE','ARCHIVE: No evaluations archived. Confirmed verdicts will appear here after you click CONFIRM_VERDICT.')" class="flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">history</span>Archive</a></li>
+      </ul>
+    </div>
+    <ul class="flex flex-col gap-1">
+      <li><a href="#" onclick="showModal('help','SYSTEM_HELP','VERDICT v2.4 — Evidence-first candidate evaluation. Submit a candidate profile and role description. Four agents process in sequence: Evidence Extractor → Criteria Mapper → Bias Auditor → Accountability Agent. All decisions are fully traceable.')" class="flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">help</span>Help</a></li>
+      <li><a href="#" onclick="showLogsModal()" class="flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all"><span class="material-symbols-outlined">terminal</span>Logs</a></li>
+    </ul>
+  </nav>
+
+  <!-- Content -->
+  <div class="flex-1 md:ml-64 relative w-full h-full overflow-hidden">
+
+    <!-- SCREEN 1: SUBMIT -->
+    <main class="absolute inset-0 p-4 md:p-8 overflow-y-auto flex flex-col" id="screen-submission">
+      <div class="mb-8 border-b border-outline-variant pb-4 flex justify-between items-end">
+        <div>
+          <h1 class="font-headline-sm text-headline-sm text-primary mb-2">INITIALIZE EVALUATION SEQUENCE</h1>
+          <p class="font-data-mono text-data-mono text-on-surface-variant">Provide candidate artifacts and comparative role parameters below.</p>
+        </div>
+        <div class="hidden lg:flex items-center gap-2">
+          <span class="material-symbols-outlined text-outline text-sm">lock</span>
+          <span class="font-label-caps text-label-caps text-outline">SECURE FORENSIC ENVIRONMENT</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[400px]">
+        <div class="flex flex-col bg-surface-container border border-outline-variant rounded-sm overflow-hidden focus-within:border-primary transition-colors">
+          <div class="bg-surface-container-highest border-b border-outline-variant px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[18px]">person</span><span class="font-label-caps text-label-caps text-primary">Candidate Application Text</span></div>
+            <span class="font-data-mono text-[10px] text-outline">INPUT_STREAM_01</span>
+          </div>
+          <textarea class="flex-1 w-full bg-transparent text-on-surface font-data-mono text-data-mono p-4 focus:ring-0 focus:outline-none resize-none placeholder-outline/50 border-none" id="input-candidate" placeholder="Paste full application text here..."></textarea>
+        </div>
+        <div class="flex flex-col bg-surface-container border border-outline-variant rounded-sm overflow-hidden focus-within:border-tertiary-fixed-dim transition-colors">
+          <div class="bg-surface-container-highest border-b border-outline-variant px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">description</span><span class="font-label-caps text-label-caps text-tertiary-fixed-dim">Role Description</span></div>
+            <span class="font-data-mono text-[10px] text-outline">INPUT_STREAM_02</span>
+          </div>
+          <textarea class="flex-1 w-full bg-transparent text-on-surface font-data-mono text-data-mono p-4 focus:ring-0 focus:outline-none resize-none placeholder-outline/50 border-none" id="input-role" placeholder="Paste role requirements and criteria here..."></textarea>
+        </div>
+      </div>
+      <div class="mt-8 flex flex-col items-center border-t border-outline-variant pt-8">
+        <button id="btn-run-verdict" class="bg-secondary text-on-secondary hover:bg-secondary-fixed transition-all px-12 py-4 rounded-sm font-label-caps text-label-caps flex items-center gap-3 border border-secondary shadow-[0_0_20px_rgba(78,222,163,0.15)] hover:shadow-[0_0_30px_rgba(78,222,163,0.25)] group relative overflow-hidden">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">play_arrow</span>
+          <span class="relative z-10 tracking-widest">RUN VERDICT</span>
+          <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+        </button>
+        <p class="text-error font-data-mono text-xs mt-2 hidden" id="error-msg">Please provide both candidate text and role description.</p>
+        <p class="font-data-mono text-[11px] text-outline mt-4">ESTIMATED COMPUTE TIME: ~30s</p>
+      </div>
+    </main>
+
+    <!-- SCREEN 2: PIPELINE -->
+    <main class="absolute inset-0 p-4 md:p-8 overflow-y-auto hidden flex-col" id="screen-pipeline">
+      <div class="mb-12 border-b border-outline-variant pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 class="font-headline-md text-headline-md text-primary mb-2 flex items-center gap-3"><span class="material-symbols-outlined text-secondary animate-spin-slow">radar</span>SYSTEM EVALUATION IN PROGRESS</h1>
+          <p class="font-data-mono text-data-mono text-on-surface-variant">TARGET_ID: CND-8924-X | TIMESTAMP: <span id="current-time"></span></p>
+        </div>
+        <div class="bg-surface-container border border-outline-variant rounded p-3 flex flex-col items-end min-w-[150px]">
+          <span class="font-label-caps text-label-caps text-on-surface-variant mb-1">ELAPSED TIME</span>
+          <span class="font-data-mono text-data-mono text-xl text-primary flex items-center gap-2"><span class="material-symbols-outlined text-sm">timer</span><span id="live-timer">00:00:00</span></span>
+        </div>
+      </div>
+      <div class="flex-1 flex flex-col justify-center">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 relative z-10" id="pipeline-nodes"></div>
+        <div class="mt-16 flex justify-center">
+          <button class="bg-transparent border border-error text-error font-label-caps text-label-caps px-8 py-3 rounded hover:bg-error/10 transition-colors flex items-center gap-2 tracking-widest">
+            <span class="material-symbols-outlined text-sm">stop_circle</span>INTERRUPT EVALUATION
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- SCREEN 3: RESULTS -->
+    <main class="absolute inset-0 p-4 md:p-8 overflow-y-auto hidden flex-col" id="screen-results">
+      <div class="max-w-7xl mx-auto space-y-8 w-full">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-6 gap-4">
+          <div>
+            <span class="font-data-mono text-data-mono text-on-surface-variant block mb-2">EVAL_ID: CAND-8924-X</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Candidate Evaluation Report</h2>
+          </div>
+          <div class="flex flex-col items-end text-right">
+            <span class="font-label-caps text-label-caps text-on-surface-variant mb-1">FINAL_VERDICT</span>
+            <div class="font-display-lg text-display-lg uppercase tracking-widest border-2 px-6 py-2" id="res-verdict">PENDING</div>
+            <span class="font-data-mono text-data-mono text-on-surface-variant mt-2">CONFIDENCE_SCORE: <span class="font-bold" id="res-confidence">--%</span></span>
+          </div>
+        </section>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="xl:col-span-2 flex flex-col gap-6">
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
+              <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="document.getElementById('evidence-content').classList.toggle('hidden')">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">find_in_page</span>EVIDENCE_EXTRACTED</h3>
+                <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+              </div>
+              <div class="space-y-4" id="evidence-content"></div>
+            </div>
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
+              <div class="flex justify-between items-center mb-6 cursor-pointer" onclick="document.getElementById('criteria-content').classList.toggle('hidden')">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">bar_chart</span>CRITERIA_ALIGNMENT</h3>
+                <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+              </div>
+              <div class="space-y-4 font-data-mono text-data-mono" id="criteria-content"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-6">
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col h-fit" id="bias-container">
+              <div class="flex items-center gap-3 mb-4 border-b border-outline-variant pb-4" id="bias-header">
+                <span class="material-symbols-outlined text-[32px]">warning</span>
+                <h3 class="font-headline-sm text-headline-sm uppercase tracking-widest font-bold">BIAS_DETECTED</h3>
+              </div>
+              <div class="font-data-mono text-data-mono space-y-3" id="bias-content"></div>
+            </div>
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col flex-1">
+              <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2 mb-4 border-b border-outline-variant pb-4"><span class="material-symbols-outlined text-[18px]">comment</span>EVALUATOR_REASONING</h3>
+              <textarea class="w-full min-h-[150px] bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-reasoning" readonly></textarea>
+              <h3 class="font-headline-sm text-headline-sm text-secondary flex items-center gap-2 mb-4 mt-6 border-b border-outline-variant pb-4"><span class="material-symbols-outlined text-[18px]">feedback</span>CANDIDATE_FEEDBACK</h3>
+              <textarea class="w-full h-32 bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-feedback" readonly></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-outline-variant">
+          <button onclick="showToast('REPORT ARCHIVED SUCCESSFULLY')" class="px-6 py-2 border border-outline-variant text-on-surface hover:bg-surface-variant/50 font-label-caps text-label-caps rounded transition-colors">ARCHIVE_REPORT</button>
+          <button onclick="showModal('done_all','VERDICT CONFIRMED','This decision has been logged to the audit trail. A full evidence record has been stored for review.')" class="px-6 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded hover:opacity-90 transition-opacity flex items-center gap-2">
+            <span class="material-symbols-outlined text-[14px]">done_all</span>CONFIRM_VERDICT
+          </button>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+let lastApiResponse = null;
+
+// ---- Modal & Toast ----
+function showModal(icon, title, text) {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.getElementById('modal-title').innerHTML = `<span class="material-symbols-outlined">${icon}</span> ${title}`;
+    document.getElementById('modal-text').innerText = text;
+    document.getElementById('modal-text').classList.remove('hidden');
+    document.getElementById('modal-code').classList.add('hidden');
+}
+
+function showLogsModal() {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.getElementById('modal-title').innerHTML = `<span class="material-symbols-outlined">terminal</span> SYSTEM_LOGS`;
+    document.getElementById('modal-text').classList.add('hidden');
+    const codeEl = document.getElementById('modal-code');
+    codeEl.classList.remove('hidden');
+    codeEl.innerText = lastApiResponse
+        ? JSON.stringify(lastApiResponse, null, 2)
+        : '// No API requests logged yet.\n// Run an evaluation to generate logs.';
+}
+
+function closeModal() {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'bg-surface-container-high border border-outline-variant text-on-surface font-label-caps text-label-caps px-6 py-3 rounded shadow-lg flex items-center gap-3';
+    toast.innerHTML = `<span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span> ${message}`;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+// ---- Screen Management ----
+const screens = {
+    sub: document.getElementById('screen-submission'),
+    pipe: document.getElementById('screen-pipeline'),
+    res: document.getElementById('screen-results')
+};
+
+function showScreen(name) {
+    Object.values(screens).forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
+    screens[name].classList.remove('hidden');
+    screens[name].classList.add('flex');
+
+    const subStatus = document.getElementById('header-status-submission');
+    const pipeStatus = document.getElementById('header-status-pipeline');
+    subStatus.className = (name === 'sub') ? 'hidden md:flex items-center gap-2 px-3 py-1 bg-surface-variant/50 border border-outline-variant rounded-sm' : 'hidden';
+    pipeStatus.className = (name === 'pipe') ? 'flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary rounded-sm' : 'hidden';
+
+    const activeClass = 'flex items-center gap-3 px-4 py-3 border-l-2 border-secondary text-secondary bg-surface-variant/30 font-label-caps text-label-caps transition-all';
+    const inactiveClass = 'flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all';
+    document.getElementById('nav-dashboard').className = (name === 'sub') ? activeClass : inactiveClass;
+    document.getElementById('nav-evaluations').className = (name === 'res') ? activeClass : inactiveClass;
+}
+
+// ---- Pipeline Nodes ----
+const agentDefs = [
+    { id: 'Evidence Extractor', icon: 'troubleshoot', logs: ['Initiating data scrape...', 'Connecting to repositories [OK]', 'Extracting entities...'] },
+    { id: 'Criteria Mapper',    icon: 'schema',       logs: ['Mapping criteria to inputs...', 'Calculating semantic drift...', 'Alignment processing...'] },
+    { id: 'Bias Auditor',       icon: 'balance',      logs: ['Scanning for demographic markers...', 'Evaluating tonal variance...', 'Flagging structural biases...'] },
+    { id: 'Accountability',     icon: 'gavel',        logs: ['Cross-referencing precedents...', 'Validating final assertions...', 'Compiling verdict summary...'] }
+];
+
+const pipelineContainer = document.getElementById('pipeline-nodes');
+agentDefs.forEach((agent, idx) => {
+    const isLast = idx === agentDefs.length - 1;
+    pipelineContainer.innerHTML += `
+        <div id="node-${idx}" class="relative flex flex-col ${!isLast ? 'pipeline-line' : ''} lg:pr-8 lg:px-4 pb-8 lg:pb-0">
+            <div id="card-${idx}" class="bg-surface-container border border-outline-variant rounded-lg p-5 flex flex-col h-full opacity-60 grayscale transition-all duration-500">
+                <div class="flex items-start mb-4">
+                    <div id="icon-bg-${idx}" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center bg-surface-container-lowest text-on-surface-variant relative mr-3">
+                        <span class="material-symbols-outlined text-xl">${agent.icon}</span>
+                        <svg id="spinner-${idx}" class="absolute inset-0 w-full h-full hidden" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="75 225" stroke-width="2"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="title-${idx}" class="font-headline-sm text-headline-sm text-on-surface-variant">${agent.id}</h3>
+                        <span id="status-${idx}" class="font-label-caps text-label-caps text-outline">AGENT 0${idx+1} // PENDING</span>
+                    </div>
+                </div>
+                <div class="flex justify-between font-data-mono text-data-mono text-outline mb-2"><span>PROGRESS</span><span id="prog-text-${idx}">0%</span></div>
+                <div class="h-1 bg-surface-container-highest w-full rounded-full overflow-hidden mb-6">
+                    <div id="prog-bar-${idx}" class="h-full bg-outline w-0 transition-all duration-500"></div>
+                </div>
+                <div id="terminal-${idx}" class="mt-auto bg-surface-container-lowest border border-outline-variant rounded p-3 font-data-mono text-data-mono h-24 overflow-y-hidden text-outline flex items-center justify-center">
+                    Awaiting execution...
+                </div>
+            </div>
+        </div>`;
+});
+
+// ---- Run Button ----
+document.getElementById('btn-run-verdict').addEventListener('click', async () => {
+    const cText = document.getElementById('input-candidate').value.trim();
+    const rText = document.getElementById('input-role').value.trim();
+    if (!cText || !rText) { document.getElementById('error-msg').classList.remove('hidden'); return; }
+    document.getElementById('error-msg').classList.add('hidden');
+    showScreen('pipe');
+
+    let pipelineDone = false;
+    let fetchDone = false;
+    let apiData = null;
+
+    // Reset agent log arrays so re-runs work
+    const agentLogs = [
+        ['Initiating data scrape...', 'Connecting to repositories [OK]', 'Extracting entities...'],
+        ['Mapping criteria to inputs...', 'Calculating semantic drift...', 'Alignment processing...'],
+        ['Scanning for demographic markers...', 'Evaluating tonal variance...', 'Flagging structural biases...'],
+        ['Cross-referencing precedents...', 'Validating final assertions...', 'Compiling verdict summary...']
+    ];
+
+    async function runPipeline() {
+        for (let i = 0; i < agentDefs.length; i++) {
+            const card     = document.getElementById(`card-${i}`);
+            const iconBg   = document.getElementById(`icon-bg-${i}`);
+            const spinner  = document.getElementById(`spinner-${i}`);
+            const title    = document.getElementById(`title-${i}`);
+            const status   = document.getElementById(`status-${i}`);
+            const progBar  = document.getElementById(`prog-bar-${i}`);
+            const progText = document.getElementById(`prog-text-${i}`);
+            const terminal = document.getElementById(`terminal-${i}`);
+            const line     = document.getElementById(`node-${i}`);
+
+            card.classList.remove('opacity-60','grayscale','border-outline-variant');
+            card.classList.add('border-2','border-secondary','shadow-[0_0_15px_rgba(78,222,163,0.1)]');
+            iconBg.classList.replace('border-outline','border-secondary');
+            iconBg.classList.replace('text-on-surface-variant','text-secondary');
+            iconBg.classList.replace('bg-surface-container-lowest','bg-secondary/10');
+            spinner.classList.remove('hidden');
+            spinner.classList.add('animate-spin-slow');
+            title.classList.replace('text-on-surface-variant','text-on-surface');
+            status.classList.replace('text-outline','text-secondary');
+            status.innerText = `AGENT 0${i+1} // ACTIVE`;
+            terminal.classList.replace('text-outline','text-secondary');
+            terminal.classList.replace('flex','block');
+            terminal.classList.remove('items-center','justify-center');
+            terminal.classList.add('scanline-effect');
+            if (line && i < agentDefs.length - 1) line.classList.add('active-line');
+            terminal.innerHTML = '';
+
+            const logs = [...agentLogs[i]];
+            for (let p = 10; p <= 100; p += 30) {
+                progBar.style.width = `${p}%`;
+                progBar.className = 'h-full bg-secondary transition-all duration-500 relative overflow-hidden';
+                progBar.innerHTML = '<div class="absolute inset-0 bg-white/20 animate-pulse"></div>';
+                progText.innerText = `${p}%`;
+                progText.className = 'text-secondary';
+                if (logs.length > 0) terminal.innerHTML += `<div class="mb-1">> ${logs.shift()} <span class="cursor-blink">_</span></div>`;
+                await new Promise(r => setTimeout(r, 600));
+            }
+
+            spinner.classList.add('hidden');
+            iconBg.innerHTML = `<span class="material-symbols-outlined text-xl text-secondary">check</span>`;
+            status.innerText = `AGENT 0${i+1} // COMPLETE`;
+            terminal.classList.remove('scanline-effect');
+            progBar.innerHTML = '';
+        }
+        pipelineDone = true;
+        checkCompletion();
+    }
+
+    async function runFetch() {
+        try {
+            const res = await fetch('http://localhost:5000/evaluate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ application_text: cText, role_description: rText })
+            });
+            apiData = await res.json();
+            lastApiResponse = apiData;
+            fetchDone = true;
+            checkCompletion();
+        } catch (e) {
+            console.error('Fetch failed', e);
+        }
+    }
+
+    function checkCompletion() {
+        if (pipelineDone && fetchDone) {
+            populateResults(apiData);
+            setTimeout(() => showScreen('res'), 500);
+        }
+    }
+
+    runPipeline();
+    runFetch();
+});
+
+// ---- Populate Results ----
+function populateResults(data) {
+    // Verdict badge
+    const vEl = document.getElementById('res-verdict');
+    vEl.innerText = data.verdict.verdict;
+    let vColor = 'text-outline border-outline';
+    if (data.verdict.verdict === 'ADVANCE')  vColor = 'text-secondary border-secondary';
+    if (data.verdict.verdict === 'WAITLIST') vColor = 'text-tertiary border-tertiary';
+    if (data.verdict.verdict === 'REJECT')   vColor = 'text-error border-error';
+    vEl.className = `font-display-lg text-display-lg uppercase tracking-widest border-2 px-6 py-2 ${vColor}`;
+
+    document.getElementById('res-confidence').innerText = `${data.verdict.confidence}%`;
+    document.getElementById('res-confidence').className = `font-bold ${vColor.split(' ')[0]}`;
+    document.getElementById('res-reasoning').value = data.verdict.decision_rationale || '';
+    document.getElementById('res-feedback').value  = data.verdict.feedback_for_candidate || '';
+
+    // Evidence
+    const evContainer = document.getElementById('evidence-content');
+    evContainer.innerHTML = '';
+    Object.entries(data.evidence).forEach(([key, items]) => {
+        if (!items || (Array.isArray(items) && items.length === 0)) return;
+        let display;
+        if (Array.isArray(items)) {
+            display = items.map(i => {
+                if (typeof i === 'object' && i !== null) return i.name || i.title || JSON.stringify(i);
+                return String(i);
+            }).join(', ');
+        } else {
+            display = String(items);
+        }
+        evContainer.innerHTML += `
+            <div class="font-data-mono text-data-mono text-on-surface bg-surface p-4 border-l-2 border-primary border border-outline-variant/50 rounded">
+                <span class="text-primary block mb-1">${key.toUpperCase()}:</span>
+                <span class="text-on-surface-variant">${display}</span>
+            </div>`;
+    });
+
+    // Criteria
+    const crContainer = document.getElementById('criteria-content');
+    crContainer.innerHTML = '';
+    const criteriaList = data.criteria_scores.criteria_scores || [];
+    criteriaList.forEach(c => {
+        const score = c.score !== undefined ? c.score : 0;
+        // API returns 0-10; normalize to 0-100 for display width if needed
+        const displayWidth = score > 10 ? score : score * 10;
+        const label = score > 10 ? `${score}/100` : `${score}/10`;
+        const name  = c.criterion || c.name || 'CRITERION';
+        let bgClass = 'bg-error', txtClass = 'text-error font-bold';
+        if (displayWidth >= 80) { bgClass = 'bg-secondary'; txtClass = 'text-secondary'; }
+        else if (displayWidth >= 50) { bgClass = 'bg-tertiary'; txtClass = 'text-tertiary'; }
+        crContainer.innerHTML += `
+            <div class="flex items-center gap-4">
+                <span class="w-40 text-right text-on-surface-variant truncate text-xs">${name}</span>
+                <div class="flex-1 bg-surface-variant h-3 rounded-full overflow-hidden border border-outline-variant">
+                    <div class="${bgClass} h-full" style="width:${displayWidth}%;"></div>
+                </div>
+                <span class="w-14 ${txtClass}">${label}</span>
+            </div>`;
+    });
+
+    // Bias
+    const biasContainer = document.getElementById('bias-container');
+    const biasHeader    = document.getElementById('bias-header');
+    const biasContent   = document.getElementById('bias-content');
+    const risk = (data.bias_report.overall_bias_risk || '').toUpperCase();
+
+    if (risk === 'HIGH' || risk === 'MEDIUM') {
+        biasContainer.className = 'bg-error-container/10 border border-error pulse-alert rounded-lg p-6 flex flex-col h-fit';
+        biasHeader.className = 'flex items-center gap-3 mb-4 text-error border-b border-error/30 pb-4';
+        biasHeader.innerHTML = `<span class="material-symbols-outlined text-[32px]" style="font-variation-settings:'FILL' 1">warning</span><h3 class="font-headline-sm text-headline-sm uppercase tracking-widest font-bold">BIAS_DETECTED</h3>`;
+        biasContent.innerHTML = (data.bias_report.bias_flags || []).map(f => `
+            <div class="bg-error-container/20 p-3 border-l-2 border-error">
+                <span class="text-error font-bold block mb-1">FLAG_SEVERITY: ${f.severity}</span>
+                <p class="text-on-surface">${f.evidence || f.description || ''}</p>
+                ${f.recommendation ? `<p class="text-on-surface-variant text-xs mt-1">REC: ${f.recommendation}</p>` : ''}
+            </div>`).join('');
+    } else {
+        biasContainer.className = 'bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col h-fit';
+        biasHeader.className = 'flex items-center gap-3 mb-4 text-secondary border-b border-outline-variant pb-4';
+        biasHeader.innerHTML = `<span class="material-symbols-outlined text-[32px]">verified</span><h3 class="font-headline-sm text-headline-sm uppercase tracking-widest font-bold">NO_CRITICAL_BIAS</h3>`;
+        biasContent.innerHTML = `<div class="text-on-surface-variant">${data.bias_report.summary || 'System detected acceptable tolerance levels.'}</div>`;
+    }
+}
+
+// ---- Live Timer ----
+let timerSecs = 0;
+setInterval(() => {
+    const now = new Date();
+    const el = document.getElementById('current-time');
+    if (el) el.innerText = now.toISOString().replace('T',' ').substring(0,19) + 'Z';
+    if (!screens.pipe.classList.contains('hidden')) {
+        timerSecs++;
+        const m = Math.floor(timerSecs/60).toString().padStart(2,'0');
+        const s = (timerSecs%60).toString().padStart(2,'0');
+        document.getElementById('live-timer').innerText = `00:${m}:${s}`;
+    }
+}, 1000);
+</script>
+</body></html>
