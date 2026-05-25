@@ -1,7 +1,5 @@
 \# VERDICT — Status
 
-
-
 \## Project
 
 Multi-agent candidate evaluation system built for the Band of Agents Hackathon (lablab.ai, June 12–19 2026).
@@ -46,13 +44,19 @@ Multi-agent candidate evaluation system built for the Band of Agents Hackathon (
 
 \- \[x] Git repo initialized
 
-\- \[ ] Multi-domain selector
+\- \[x] Multi-domain selector (Research / Corporate / Compliance)
 
-\- \[ ] Improvement Roadmap display
+\- \[x] Improvement Roadmap display
 
-\- \[ ] Stealth Signal Score
+\- \[x] Stealth Signal Score
 
-\- \[ ] Band live feed panel
+\- \[x] Band live feed panel
+
+\- \[x] README updated
+
+\- \[ ] Demo video recorded
+
+\- \[ ] lablab.ai submission form completed
 
 
 
@@ -66,7 +70,21 @@ Multi-agent candidate evaluation system built for the Band of Agents Hackathon (
 
 
 
+\## Live Run Results
+
+\- Domain: Research Program Admission
+
+\- Verdict: WAITLIST (80% confidence)
+
+\- Signal Score: 70/100
+
+\- Bias flags: Geographic bias, GPA rigidity, publication gatekeeping
+
+\- Band feed: All 4 agents logged with timestamps
+
+
+
 \## Team
 
-\- Agent Clarence — Mohammad Azlaan (solo)
+Mohammad Azlaan (solo)
 
