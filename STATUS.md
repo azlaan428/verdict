@@ -22,7 +22,7 @@ Multi-agent candidate evaluation system built for the Band of Agents Hackathon (
 
 \## Agents
 
-1\. Evidence Extractor — parses candidate profile for verifiable evidence
+1\. Evidence Extractor — parses candidate profile for verifiable evidence + GitHub repo scanning
 
 2\. Criteria Mapper — scores evidence against role requirements
 
@@ -48,9 +48,17 @@ Multi-agent candidate evaluation system built for the Band of Agents Hackathon (
 
 \- \[x] Improvement Roadmap display
 
-\- \[x] Stealth Signal Score
+\- \[x] Stealth Signal Score (composite: evidence + fit + bias)
 
 \- \[x] Band live feed panel
+
+\- \[x] GitHub repo scanner (live fetch via GitHub API)
+
+\- \[x] PDF upload and auto-parse
+
+\- \[x] DOCX upload and auto-parse
+
+\- \[x] Evidence display cleaned up (no raw JSON)
 
 \- \[x] README updated
 
@@ -76,9 +84,11 @@ Multi-agent candidate evaluation system built for the Band of Agents Hackathon (
 
 \- Verdict: WAITLIST (80% confidence)
 
-\- Signal Score: 70/100
+\- Signal Score: 81/100
 
 \- Bias flags: Geographic bias, GPA rigidity, publication gatekeeping
+
+\- GitHub repos: detected and included in evidence scan
 
 \- Band feed: All 4 agents logged with timestamps
 
