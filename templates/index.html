@@ -12,10 +12,9 @@ tailwind.config = {
     theme: {
         extend: {
             colors: {
-                "surface-container-high":"#272a2c","tertiary-fixed-dim":"#ffb95f","on-primary-fixed":"#131b2e","primary-container":"#0f172a","on-tertiary-fixed":"#2a1700","outline-variant":"#45464d","on-primary-container":"#798098","surface-dim":"#101415","surface-container-low":"#191c1e","surface-container":"#1d2022","error":"#ffb4ab","surface-variant":"#323537","inverse-primary":"#565e74","outline":"#909097","on-error":"#690005","on-tertiary-fixed-variant":"#653e00","tertiary":"#ffb95f","primary":"#bec6e0","secondary":"#4edea3","background":"#101415","on-secondary-fixed-variant":"#005236","secondary-fixed":"#6ffbbe","on-secondary":"#003824","primary-fixed-dim":"#bec6e0","surface-container-lowest":"#0b0f10","tertiary-fixed":"#ffddb8","inverse-on-surface":"#2d3133","tertiary-container":"#251400","inverse-surface":"#e0e3e5","on-tertiary-container":"#b47300","error-container":"#93000a","secondary-container":"#00a572","on-tertiary":"#472a00","on-error-container":"#ffdad6","surface":"#101415","on-primary":"#283044","primary-fixed":"#dae2fd","on-primary-fixed-variant":"#3f465c","on-secondary-container":"#00311f","surface-tint":"#bec6e0","surface-bright":"#363a3b","on-surface-variant":"#c6c6cd","on-background":"#e0e3e5","on-secondary-fixed":"#002113","on-surface":"#e0e3e5","surface-container-highest":"#323537","secondary-fixed-dim":"#4edea3"
+                "surface-container-high":"#272a2c","tertiary-fixed-dim":"#ffb95f","on-primary-fixed":"#131b2e","primary-container":"#0f172a","on-tertiary-fixed":"#2a1700","outline-variant":"#45464d","on-primary-container":"#798098","surface-dim":"#101415","surface-container-low":"#191c1e","surface-container":"#1d2022","error":"#ffb4ab","surface-variant":"#323537","inverse-primary":"#565e74","outline":"#909097","on-error":"#690005","on-tertiary-fixed-variant":"#653e00","tertiary":"#ffb95f","primary":"#bec6e0","secondary":"#4edea3","background":"#101415","on-secondary-fixed-variant":"#005236","secondary-fixed":"#6ffbbe","on-secondary":"#003824","primary-fixed-dim":"#bec6e0","surface-container-lowest":"#0b0f10","tertiary-fixed":"#ffddb8","inverse-on-surface":"#2d3133","tertiary-container":"#251400","inverse-surface":"#e0e3e5","on-tertiary-container":"#b47300","error-container":"#93000a","secondary-container":"#00a572","on-tertiary":"#472a00","on-error-container":"#ffdad6","surface":"#101415","on-primary":"#283044","primary-fixed":"#dae2fd","on-primary-fixed-variant":"#3f465c","on-secondary-container":"#00311f","surface-tint":"#bec6e0","surface-bright":"#363a3b","on-surface-variant":"#c6c6cd","on-background":"#e0e3e5","on-secondary":"#003824","on-surface":"#e0e3e5","surface-container-highest":"#323537","secondary-fixed-dim":"#4edea3"
             },
             borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
-            spacing:{"margin-mobile":"16px","gutter":"16px","margin-desktop":"32px","unit":"4px","container-max":"1440px"},
             fontFamily:{"label-caps":["JetBrains Mono"],"headline-sm":["Inter"],"body-md":["Inter"],"display-lg":["Inter"],"headline-md":["Inter"],"body-sm":["Inter"],"data-mono":["JetBrains Mono"]},
             fontSize:{
                 "label-caps":["11px",{"lineHeight":"1","letterSpacing":"0.08em","fontWeight":"700"}],
@@ -43,6 +42,25 @@ tailwind.config = {
 .pipeline-line::after{content:'';position:absolute;top:50%;left:100%;width:100%;height:1px;background-color:#45464d;z-index:-1;transform:translateY(-50%)}
 .pipeline-line.active-line::after{background:linear-gradient(90deg,#4edea3,#45464d);background-size:200% 100%;animation:flow 2s linear infinite}
 @keyframes flow{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* Domain selector */
+.domain-btn{transition:all 0.2s;}
+.domain-btn.selected{border-color:#4edea3;background:rgba(78,222,163,0.08);color:#4edea3;}
+.domain-btn.selected .domain-icon{color:#4edea3;}
+.domain-btn:not(.selected){border-color:#45464d;color:#c6c6cd;}
+
+/* Signal score ring */
+@keyframes ring-fill{from{stroke-dashoffset:339}to{stroke-dashoffset:var(--target-offset)}}
+.ring-animate{animation:ring-fill 1.2s cubic-bezier(0.4,0,0.2,1) forwards;}
+
+/* Band feed */
+.band-msg{animation:fade-in-up 0.3s ease forwards;}
+@keyframes fade-in-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Roadmap items */
+.roadmap-item{counter-increment:roadmap-counter;}
+.roadmap-item::before{content:counter(roadmap-counter,'0'/'');font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#4edea3;letter-spacing:0.08em;}
+.roadmap-list{counter-reset:roadmap-counter;}
 </style>
 </head>
 <body class="bg-background text-on-surface antialiased h-screen overflow-hidden flex flex-col selection:bg-secondary/30 selection:text-secondary-fixed mono-bg relative">
@@ -73,6 +91,11 @@ tailwind.config = {
     <div class="hidden items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary rounded-sm" id="header-status-pipeline">
       <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
       <span class="font-label-caps text-label-caps text-secondary">LIVE PIPELINE</span>
+    </div>
+    <!-- Domain badge shown on results -->
+    <div class="hidden items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/40 rounded-sm" id="header-domain-badge">
+      <span class="material-symbols-outlined text-primary text-sm">category</span>
+      <span class="font-label-caps text-label-caps text-primary" id="header-domain-label">--</span>
     </div>
   </div>
   <div class="flex items-center gap-4">
@@ -110,7 +133,7 @@ tailwind.config = {
 
     <!-- SCREEN 1: SUBMIT -->
     <main class="absolute inset-0 p-4 md:p-8 overflow-y-auto flex flex-col" id="screen-submission">
-      <div class="mb-8 border-b border-outline-variant pb-4 flex justify-between items-end">
+      <div class="mb-6 border-b border-outline-variant pb-4 flex justify-between items-end">
         <div>
           <h1 class="font-headline-sm text-headline-sm text-primary mb-2">INITIALIZE EVALUATION SEQUENCE</h1>
           <p class="font-data-mono text-data-mono text-on-surface-variant">Provide candidate artifacts and comparative role parameters below.</p>
@@ -120,7 +143,42 @@ tailwind.config = {
           <span class="font-label-caps text-label-caps text-outline">SECURE FORENSIC ENVIRONMENT</span>
         </div>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[400px]">
+
+      <!-- DOMAIN SELECTOR -->
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary text-[16px]">category</span>
+          <span class="font-label-caps text-label-caps text-primary">SELECT EVALUATION DOMAIN</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="domain-selector">
+          <button class="domain-btn selected border rounded-sm p-4 text-left flex items-start gap-3" data-domain="research" onclick="selectDomain('research')">
+            <span class="material-symbols-outlined domain-icon text-[20px] mt-0.5">science</span>
+            <div>
+              <div class="font-label-caps text-label-caps mb-1">RESEARCH ADMISSION</div>
+              <div class="font-data-mono text-[11px] text-on-surface-variant leading-relaxed">Academic programs, internships, fellowships. Evaluates research output and intellectual potential.</div>
+              <div class="mt-2 font-label-caps text-[10px] text-outline">TRACK 3 // REGULATED WORKFLOWS</div>
+            </div>
+          </button>
+          <button class="domain-btn border rounded-sm p-4 text-left flex items-start gap-3" data-domain="corporate" onclick="selectDomain('corporate')">
+            <span class="material-symbols-outlined domain-icon text-[20px] mt-0.5 text-on-surface-variant">business_center</span>
+            <div>
+              <div class="font-label-caps text-label-caps mb-1">CORPORATE HIRING</div>
+              <div class="font-data-mono text-[11px] text-on-surface-variant leading-relaxed">Enterprise roles, startups, technical positions. Evaluates shipped work and practical impact.</div>
+              <div class="mt-2 font-label-caps text-[10px] text-outline">TRACK 1 // ENTERPRISE OPS</div>
+            </div>
+          </button>
+          <button class="domain-btn border rounded-sm p-4 text-left flex items-start gap-3" data-domain="compliance" onclick="selectDomain('compliance')">
+            <span class="material-symbols-outlined domain-icon text-[20px] mt-0.5 text-on-surface-variant">policy</span>
+            <div>
+              <div class="font-label-caps text-label-caps mb-1">COMPLIANCE SCREENING</div>
+              <div class="font-data-mono text-[11px] text-on-surface-variant leading-relaxed">Regulatory review, credential verification, loan applications. Evaluates documentation completeness.</div>
+              <div class="mt-2 font-label-caps text-[10px] text-outline">TRACK 2 // AUDIT PIPELINE</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[300px]">
         <div class="flex flex-col bg-surface-container border border-outline-variant rounded-sm overflow-hidden focus-within:border-primary transition-colors">
           <div class="bg-surface-container-highest border-b border-outline-variant px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[18px]">person</span><span class="font-label-caps text-label-caps text-primary">Candidate Application Text</span></div>
@@ -136,7 +194,7 @@ tailwind.config = {
           <textarea class="flex-1 w-full bg-transparent text-on-surface font-data-mono text-data-mono p-4 focus:ring-0 focus:outline-none resize-none placeholder-outline/50 border-none" id="input-role" placeholder="Paste role requirements and criteria here..."></textarea>
         </div>
       </div>
-      <div class="mt-8 flex flex-col items-center border-t border-outline-variant pt-8">
+      <div class="mt-6 flex flex-col items-center border-t border-outline-variant pt-6">
         <button id="btn-run-verdict" class="bg-secondary text-on-secondary hover:bg-secondary-fixed transition-all px-12 py-4 rounded-sm font-label-caps text-label-caps flex items-center gap-3 border border-secondary shadow-[0_0_20px_rgba(78,222,163,0.15)] hover:shadow-[0_0_30px_rgba(78,222,163,0.25)] group relative overflow-hidden">
           <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">play_arrow</span>
           <span class="relative z-10 tracking-widest">RUN VERDICT</span>
@@ -171,20 +229,48 @@ tailwind.config = {
 
     <!-- SCREEN 3: RESULTS -->
     <main class="absolute inset-0 p-4 md:p-8 overflow-y-auto hidden flex-col" id="screen-results">
-      <div class="max-w-7xl mx-auto space-y-8 w-full">
+      <div class="max-w-7xl mx-auto space-y-6 w-full">
+
+        <!-- Header row -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-6 gap-4">
           <div>
-            <span class="font-data-mono text-data-mono text-on-surface-variant block mb-2">EVAL_ID: CAND-8924-X</span>
+            <span class="font-data-mono text-data-mono text-on-surface-variant block mb-1">EVAL_ID: CAND-8924-X</span>
+            <span class="font-label-caps text-label-caps text-primary/60 block mb-2" id="res-domain-label">--</span>
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Candidate Evaluation Report</h2>
           </div>
-          <div class="flex flex-col items-end text-right">
-            <span class="font-label-caps text-label-caps text-on-surface-variant mb-1">FINAL_VERDICT</span>
-            <div class="font-display-lg text-display-lg uppercase tracking-widest border-2 px-6 py-2" id="res-verdict">PENDING</div>
-            <span class="font-data-mono text-data-mono text-on-surface-variant mt-2">CONFIDENCE_SCORE: <span class="font-bold" id="res-confidence">--%</span></span>
+          <div class="flex items-end gap-8">
+
+            <!-- STEALTH SIGNAL SCORE -->
+            <div class="flex flex-col items-center">
+              <span class="font-label-caps text-label-caps text-on-surface-variant mb-2">SIGNAL_SCORE</span>
+              <div class="relative w-24 h-24">
+                <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#323537" stroke-width="8"/>
+                  <circle id="signal-ring" cx="60" cy="60" r="54" fill="none" stroke="#4edea3" stroke-width="8"
+                    stroke-dasharray="339" stroke-dashoffset="339"
+                    stroke-linecap="round" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="font-data-mono font-bold text-xl text-on-surface" id="signal-score-val">--</span>
+                  <span class="font-label-caps text-[9px] text-outline">/100</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- VERDICT BADGE -->
+            <div class="flex flex-col items-end text-right">
+              <span class="font-label-caps text-label-caps text-on-surface-variant mb-1">FINAL_VERDICT</span>
+              <div class="font-display-lg text-display-lg uppercase tracking-widest border-2 px-6 py-2" id="res-verdict">PENDING</div>
+              <span class="font-data-mono text-data-mono text-on-surface-variant mt-2">CONFIDENCE: <span class="font-bold" id="res-confidence">--%</span></span>
+            </div>
           </div>
         </section>
+
+        <!-- Main grid -->
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div class="xl:col-span-2 flex flex-col gap-6">
+
+            <!-- Evidence -->
             <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
               <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="document.getElementById('evidence-content').classList.toggle('hidden')">
                 <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">find_in_page</span>EVIDENCE_EXTRACTED</h3>
@@ -192,6 +278,8 @@ tailwind.config = {
               </div>
               <div class="space-y-4" id="evidence-content"></div>
             </div>
+
+            <!-- Criteria -->
             <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
               <div class="flex justify-between items-center mb-6 cursor-pointer" onclick="document.getElementById('criteria-content').classList.toggle('hidden')">
                 <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">bar_chart</span>CRITERIA_ALIGNMENT</h3>
@@ -199,8 +287,22 @@ tailwind.config = {
               </div>
               <div class="space-y-4 font-data-mono text-data-mono" id="criteria-content"></div>
             </div>
+
+            <!-- IMPROVEMENT ROADMAP -->
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
+              <h3 class="font-headline-sm text-headline-sm text-secondary flex items-center gap-2 mb-5 border-b border-outline-variant pb-4">
+                <span class="material-symbols-outlined text-[18px]">route</span>IMPROVEMENT_ROADMAP
+              </h3>
+              <ol class="roadmap-list space-y-4" id="roadmap-content">
+                <li class="text-on-surface-variant font-data-mono text-data-mono">No roadmap generated yet.</li>
+              </ol>
+            </div>
+
           </div>
+
           <div class="flex flex-col gap-6">
+
+            <!-- Bias -->
             <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col h-fit" id="bias-container">
               <div class="flex items-center gap-3 mb-4 border-b border-outline-variant pb-4" id="bias-header">
                 <span class="material-symbols-outlined text-[32px]">warning</span>
@@ -208,15 +310,34 @@ tailwind.config = {
               </div>
               <div class="font-data-mono text-data-mono space-y-3" id="bias-content"></div>
             </div>
-            <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col flex-1">
+
+            <!-- Reasoning & Feedback -->
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col">
               <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2 mb-4 border-b border-outline-variant pb-4"><span class="material-symbols-outlined text-[18px]">comment</span>EVALUATOR_REASONING</h3>
-              <textarea class="w-full min-h-[150px] bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-reasoning" readonly></textarea>
+              <textarea class="w-full min-h-[120px] bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-reasoning" readonly></textarea>
               <h3 class="font-headline-sm text-headline-sm text-secondary flex items-center gap-2 mb-4 mt-6 border-b border-outline-variant pb-4"><span class="material-symbols-outlined text-[18px]">feedback</span>CANDIDATE_FEEDBACK</h3>
-              <textarea class="w-full h-32 bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-feedback" readonly></textarea>
+              <textarea class="w-full h-28 bg-surface font-data-mono text-data-mono text-on-surface border border-outline-variant rounded p-4 focus:outline-none resize-none" id="res-feedback" readonly></textarea>
             </div>
+
+            <!-- BAND LIVE FEED -->
+            <div class="bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col">
+              <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2 mb-4 border-b border-outline-variant pb-4">
+                <span class="material-symbols-outlined text-[18px]">hub</span>BAND_ROOM_FEED
+                <span class="ml-auto flex items-center gap-1.5 px-2 py-0.5 bg-secondary/10 border border-secondary/30 rounded-sm">
+                  <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                  <span class="font-label-caps text-[9px] text-secondary">LIVE</span>
+                </span>
+              </h3>
+              <div class="bg-surface-container-lowest border border-outline-variant rounded p-3 h-56 overflow-y-auto flex flex-col gap-2 font-data-mono text-[11px]" id="band-feed">
+                <div class="text-outline">// Awaiting agent communications...</div>
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-outline-variant">
+
+        <!-- Action buttons -->
+        <div class="flex justify-end gap-4 mt-4 pt-6 border-t border-outline-variant">
           <button onclick="showToast('REPORT ARCHIVED SUCCESSFULLY')" class="px-6 py-2 border border-outline-variant text-on-surface hover:bg-surface-variant/50 font-label-caps text-label-caps rounded transition-colors">ARCHIVE_REPORT</button>
           <button onclick="showModal('done_all','VERDICT CONFIRMED','This decision has been logged to the audit trail. A full evidence record has been stored for review.')" class="px-6 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded hover:opacity-90 transition-opacity flex items-center gap-2">
             <span class="material-symbols-outlined text-[14px]">done_all</span>CONFIRM_VERDICT
@@ -230,6 +351,20 @@ tailwind.config = {
 
 <script>
 let lastApiResponse = null;
+let selectedDomain = 'research';
+
+// ---- Domain Selector ----
+function selectDomain(domain) {
+    selectedDomain = domain;
+    document.querySelectorAll('.domain-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.querySelector('.domain-icon').classList.add('text-on-surface-variant');
+        btn.querySelector('.domain-icon').classList.remove('text-secondary');
+    });
+    const selected = document.querySelector(`[data-domain="${domain}"]`);
+    selected.classList.add('selected');
+    selected.querySelector('.domain-icon').classList.remove('text-on-surface-variant');
+}
 
 // ---- Modal & Toast ----
 function showModal(icon, title, text) {
@@ -285,14 +420,17 @@ function showScreen(name) {
     screens[name].classList.remove('hidden');
     screens[name].classList.add('flex');
 
-    const subStatus = document.getElementById('header-status-submission');
-    const pipeStatus = document.getElementById('header-status-pipeline');
-    subStatus.className = (name === 'sub') ? 'hidden md:flex items-center gap-2 px-3 py-1 bg-surface-variant/50 border border-outline-variant rounded-sm' : 'hidden';
-    pipeStatus.className = (name === 'pipe') ? 'flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary rounded-sm' : 'hidden';
+    const subStatus    = document.getElementById('header-status-submission');
+    const pipeStatus   = document.getElementById('header-status-pipeline');
+    const domainBadge  = document.getElementById('header-domain-badge');
 
-    const activeClass = 'flex items-center gap-3 px-4 py-3 border-l-2 border-secondary text-secondary bg-surface-variant/30 font-label-caps text-label-caps transition-all';
+    subStatus.className   = (name === 'sub')  ? 'hidden md:flex items-center gap-2 px-3 py-1 bg-surface-variant/50 border border-outline-variant rounded-sm' : 'hidden';
+    pipeStatus.className  = (name === 'pipe') ? 'flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary rounded-sm' : 'hidden';
+    domainBadge.className = (name === 'res')  ? 'flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/40 rounded-sm' : 'hidden';
+
+    const activeClass   = 'flex items-center gap-3 px-4 py-3 border-l-2 border-secondary text-secondary bg-surface-variant/30 font-label-caps text-label-caps transition-all';
     const inactiveClass = 'flex items-center gap-3 px-4 py-3 border-l-2 border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/20 font-label-caps text-label-caps transition-all';
-    document.getElementById('nav-dashboard').className = (name === 'sub') ? activeClass : inactiveClass;
+    document.getElementById('nav-dashboard').className  = (name === 'sub') ? activeClass : inactiveClass;
     document.getElementById('nav-evaluations').className = (name === 'res') ? activeClass : inactiveClass;
 }
 
@@ -333,24 +471,59 @@ agentDefs.forEach((agent, idx) => {
         </div>`;
 });
 
+// ---- Band Feed Helper ----
+const bandAgentColors = ['text-secondary', 'text-tertiary', 'text-primary', 'text-on-surface'];
+const bandAgentNames  = ['evidence-extractor', 'criteria-mapper', 'bias-auditor', 'accountability'];
+
+function pushBandMessage(agentIndex, message, type = 'info') {
+    const feed = document.getElementById('band-feed');
+    if (!feed) return;
+    const colorClass = bandAgentColors[agentIndex] || 'text-on-surface-variant';
+    const ts = new Date().toISOString().substring(11, 19);
+    const typeIcon = type === 'handoff' ? '→' : type === 'complete' ? '✓' : '·';
+    const entry = document.createElement('div');
+    entry.className = `band-msg flex gap-2`;
+    entry.innerHTML = `
+        <span class="text-outline shrink-0">[${ts}]</span>
+        <span class="${colorClass} shrink-0 font-bold">${bandAgentNames[agentIndex]}</span>
+        <span class="text-outline shrink-0">${typeIcon}</span>
+        <span class="text-on-surface-variant">${message}</span>`;
+    feed.appendChild(entry);
+    feed.scrollTop = feed.scrollHeight;
+}
+
 // ---- Run Button ----
 document.getElementById('btn-run-verdict').addEventListener('click', async () => {
     const cText = document.getElementById('input-candidate').value.trim();
     const rText = document.getElementById('input-role').value.trim();
     if (!cText || !rText) { document.getElementById('error-msg').classList.remove('hidden'); return; }
     document.getElementById('error-msg').classList.add('hidden');
+
+    // Reset band feed
+    document.getElementById('band-feed').innerHTML = '<div class="text-outline">// Band room initialized. Agents connecting...</div>';
+
+    // Reset signal ring
+    document.getElementById('signal-ring').style.strokeDashoffset = '339';
+    document.getElementById('signal-score-val').innerText = '--';
+
     showScreen('pipe');
 
     let pipelineDone = false;
-    let fetchDone = false;
-    let apiData = null;
+    let fetchDone    = false;
+    let apiData      = null;
 
-    // Reset agent log arrays so re-runs work
     const agentLogs = [
         ['Initiating data scrape...', 'Connecting to repositories [OK]', 'Extracting entities...'],
         ['Mapping criteria to inputs...', 'Calculating semantic drift...', 'Alignment processing...'],
         ['Scanning for demographic markers...', 'Evaluating tonal variance...', 'Flagging structural biases...'],
         ['Cross-referencing precedents...', 'Validating final assertions...', 'Compiling verdict summary...']
+    ];
+
+    const bandMessages = [
+        ['Joined Band room.', 'Parsing application text...', 'Evidence extraction complete. Posting to room.'],
+        ['Received evidence payload from room.', 'Scoring against role criteria...', 'Criteria matrix ready. Forwarding to auditor.'],
+        ['Received criteria scores from room.', 'Running bias pattern analysis...', 'Bias report generated. Passing to accountability.'],
+        ['Received full context from room.', 'Generating traceable verdict...', 'Verdict posted to Band room. Pipeline complete.']
     ];
 
     async function runPipeline() {
@@ -382,7 +555,12 @@ document.getElementById('btn-run-verdict').addEventListener('click', async () =>
             if (line && i < agentDefs.length - 1) line.classList.add('active-line');
             terminal.innerHTML = '';
 
-            const logs = [...agentLogs[i]];
+            const logs     = [...agentLogs[i]];
+            const bMsgs    = [...bandMessages[i]];
+
+            // Push first Band message when agent starts
+            pushBandMessage(i, bMsgs.shift(), 'info');
+
             for (let p = 10; p <= 100; p += 30) {
                 progBar.style.width = `${p}%`;
                 progBar.className = 'h-full bg-secondary transition-all duration-500 relative overflow-hidden';
@@ -390,6 +568,7 @@ document.getElementById('btn-run-verdict').addEventListener('click', async () =>
                 progText.innerText = `${p}%`;
                 progText.className = 'text-secondary';
                 if (logs.length > 0) terminal.innerHTML += `<div class="mb-1">> ${logs.shift()} <span class="cursor-blink">_</span></div>`;
+                if (bMsgs.length > 0) pushBandMessage(i, bMsgs.shift(), p === 70 ? 'info' : 'info');
                 await new Promise(r => setTimeout(r, 600));
             }
 
@@ -398,6 +577,13 @@ document.getElementById('btn-run-verdict').addEventListener('click', async () =>
             status.innerText = `AGENT 0${i+1} // COMPLETE`;
             terminal.classList.remove('scanline-effect');
             progBar.innerHTML = '';
+
+            // Push handoff message
+            if (i < agentDefs.length - 1) {
+                pushBandMessage(i, `Handing off to ${bandAgentNames[i+1]}...`, 'handoff');
+            } else {
+                pushBandMessage(i, 'All agents complete. Band room closing.', 'complete');
+            }
         }
         pipelineDone = true;
         checkCompletion();
@@ -408,7 +594,11 @@ document.getElementById('btn-run-verdict').addEventListener('click', async () =>
             const res = await fetch('http://localhost:5000/evaluate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ application_text: cText, role_description: rText })
+                body: JSON.stringify({
+                    application_text: cText,
+                    role_description: rText,
+                    domain: selectedDomain
+                })
             });
             apiData = await res.json();
             lastApiResponse = apiData;
@@ -432,6 +622,11 @@ document.getElementById('btn-run-verdict').addEventListener('click', async () =>
 
 // ---- Populate Results ----
 function populateResults(data) {
+    // Domain label
+    const domainLabel = data.domain_label || data.domain || '';
+    document.getElementById('res-domain-label').innerText = domainLabel.toUpperCase();
+    document.getElementById('header-domain-label').innerText = domainLabel.toUpperCase();
+
     // Verdict badge
     const vEl = document.getElementById('res-verdict');
     vEl.innerText = data.verdict.verdict;
@@ -445,6 +640,22 @@ function populateResults(data) {
     document.getElementById('res-confidence').className = `font-bold ${vColor.split(' ')[0]}`;
     document.getElementById('res-reasoning').value = data.verdict.decision_rationale || '';
     document.getElementById('res-feedback').value  = data.verdict.feedback_for_candidate || '';
+
+    // STEALTH SIGNAL SCORE
+    // Composite: 40% raw_signal, 40% fit_score, 20% (100 - bias_risk)
+    const rawSignal  = data.evidence.raw_signal_score || 0;
+    const fitScore   = data.criteria_scores.overall_fit_score || 0;
+    const biasRisk   = data.bias_report.bias_risk_score || 0;
+    const composite  = Math.round((rawSignal * 0.4) + (fitScore * 0.4) + ((100 - biasRisk) * 0.2));
+    document.getElementById('signal-score-val').innerText = composite;
+    // Animate ring: circumference = 2πr = 339. offset = 339 - (339 * score/100)
+    const offset = 339 - (339 * composite / 100);
+    setTimeout(() => {
+        document.getElementById('signal-ring').style.strokeDashoffset = offset;
+        // Color ring based on score
+        const ringColor = composite >= 70 ? '#4edea3' : composite >= 45 ? '#ffb95f' : '#ffb4ab';
+        document.getElementById('signal-ring').setAttribute('stroke', ringColor);
+    }, 300);
 
     // Evidence
     const evContainer = document.getElementById('evidence-content');
@@ -473,7 +684,6 @@ function populateResults(data) {
     const criteriaList = data.criteria_scores.criteria_scores || [];
     criteriaList.forEach(c => {
         const score = c.score !== undefined ? c.score : 0;
-        // API returns 0-10; normalize to 0-100 for display width if needed
         const displayWidth = score > 10 ? score : score * 10;
         const label = score > 10 ? `${score}/100` : `${score}/10`;
         const name  = c.criterion || c.name || 'CRITERION';
@@ -511,6 +721,21 @@ function populateResults(data) {
         biasHeader.className = 'flex items-center gap-3 mb-4 text-secondary border-b border-outline-variant pb-4';
         biasHeader.innerHTML = `<span class="material-symbols-outlined text-[32px]">verified</span><h3 class="font-headline-sm text-headline-sm uppercase tracking-widest font-bold">NO_CRITICAL_BIAS</h3>`;
         biasContent.innerHTML = `<div class="text-on-surface-variant">${data.bias_report.summary || 'System detected acceptable tolerance levels.'}</div>`;
+    }
+
+    // IMPROVEMENT ROADMAP
+    const roadmapEl   = document.getElementById('roadmap-content');
+    const roadmapItems = data.verdict.improvement_roadmap || [];
+    if (roadmapItems.length > 0) {
+        roadmapEl.innerHTML = roadmapItems.map(item => `
+            <li class="roadmap-item flex gap-4 items-start">
+                <div class="shrink-0 w-6 h-6 rounded-full border border-secondary/50 bg-secondary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-[12px]">arrow_forward</span>
+                </div>
+                <span class="font-data-mono text-data-mono text-on-surface leading-relaxed">${item}</span>
+            </li>`).join('');
+    } else {
+        roadmapEl.innerHTML = '<li class="text-on-surface-variant font-data-mono text-data-mono">No roadmap items generated.</li>';
     }
 }
 

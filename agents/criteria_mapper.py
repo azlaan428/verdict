@@ -8,12 +8,14 @@ llm = ChatGroq(
     temperature=0.2
 )
 
-def map_criteria(evidence: dict, role_description: str) -> dict:
+
+def map_criteria(evidence: dict, role_description: str, domain_context: str = "") -> dict:
     prompt = f"""
 You are a Criteria Mapping Agent for a candidate evaluation system.
-
 Your job is to take extracted evidence from a candidate and score it against
 the explicit requirements of a role or program.
+
+{domain_context}
 
 For each criterion in the role description, assign:
 - criterion: the requirement
@@ -36,7 +38,6 @@ ROLE DESCRIPTION:
 {role_description}
 """
     response = llm.invoke(prompt)
-
     try:
         clean = response.content.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(clean)

@@ -8,21 +8,15 @@ llm = ChatGroq(
     temperature=0.2
 )
 
-def audit_bias(evidence: dict, criteria_scores: dict) -> dict:
+
+def audit_bias(evidence: dict, criteria_scores: dict, domain_context: str = "") -> dict:
     prompt = f"""
 You are a Bias Auditor Agent for a candidate evaluation system.
-
 Your job is to detect potential bias in how a candidate is being evaluated.
 You must flag any criteria or scoring patterns that correlate with irrelevant factors
 rather than actual capability.
 
-Check for the following bias types:
-- Geographic bias: penalizing candidates from developing countries
-- Institutional prestige bias: favoring ivy league or top-ranked universities over capability
-- GPA cutoff rigidity: rejecting candidates purely on GPA without considering project output
-- Experience recency bias: penalizing candidates for gaps or non-linear paths
-- Publication bias: requiring publications for roles that do not need them
-- Language bias: penalizing non-native English speakers unfairly
+{domain_context}
 
 For each bias type found, return:
 - bias_type: name of the bias
@@ -45,7 +39,6 @@ CRITERIA SCORES:
 {json.dumps(criteria_scores, indent=2)}
 """
     response = llm.invoke(prompt)
-
     try:
         clean = response.content.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(clean)

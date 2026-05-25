@@ -8,21 +8,23 @@ llm = ChatGroq(
     temperature=0.2
 )
 
+
 def generate_verdict(
     evidence: dict,
     criteria_scores: dict,
     bias_report: dict,
-    role_description: str
+    role_description: str,
+    domain_context: str = ""
 ) -> dict:
     prompt = f"""
 You are an Accountability Agent for a candidate evaluation system.
-
 Your job is to generate a final, fully transparent verdict on a candidate.
 Every decision you make must be traceable to specific evidence.
 No silent rejections. No vague feedback. Every verdict must be defensible.
 
-Based on the evidence, criteria scores, and bias report provided, generate:
+{domain_context}
 
+Based on the evidence, criteria scores, and bias report provided, generate:
 - verdict: ADVANCE / REJECT / WAITLIST
 - confidence: integer 0-100
 - decision_rationale: detailed paragraph explaining exactly why this decision was made,
@@ -50,7 +52,6 @@ ROLE DESCRIPTION:
 {role_description}
 """
     response = llm.invoke(prompt)
-
     try:
         clean = response.content.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(clean)
