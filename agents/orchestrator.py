@@ -9,7 +9,8 @@ from agents.domain_config import get_domain_config
 def run_verdict_pipeline(
     application_text: str,
     role_description: str,
-    domain: str = "research"
+    domain: str = "research",
+    github_username: str =None
 ) -> dict:
     print(f"\n[VERDICT] Starting pipeline... Domain: {domain}")
 
@@ -19,7 +20,7 @@ def run_verdict_pipeline(
 
     # Stage 1: Evidence Extraction (domain-agnostic)
     print("[Agent 1] Evidence Extractor running...")
-    evidence = extract_evidence(application_text)
+    evidence = extract_evidence(application_text, github_username=github_username)
     print(f"[Agent 1] Done. Signal score: {evidence.get('raw_signal_score', 'N/A')}")
 
     # Stage 2: Criteria Mapping (domain-aware)
